@@ -18,7 +18,7 @@ export default function AdminSidebar() {
 
   async function handleLogout() {
     await supabase.auth.signOut()
-    router.push('/admin/login')
+    router.push('/admin-login')   // ← changed from /admin/login
   }
 
   return (
