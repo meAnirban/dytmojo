@@ -1,6 +1,29 @@
-// Paste this into each: app/dytbytes/page.tsx, app/transformations/page.tsx,
-// app/blog/page.tsx, app/get-consultation/page.tsx, app/admin/page.tsx
+import { requireAdmin } from '@/lib/admin'
+import { createClient } from '@/lib/supabase/server'
+import ClientActions from '@/components/admin/ClientActions'
+import { format } from 'date-fns'
 
-export default function Page() {
-  return <div>Coming soon</div>
+export default async function AdminClientsPage() {
+  await requireAdmin()
+  const supabase = await createClient()
+
+  const { data: requests } = await supabase
+    .from('consultation_requests')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  const grouped = {
+    pending: requests?.filter(r => r.status === 'pending') ?? [],
+    approved: requests?.filter(r => r.status === 'approved') ?? [],
+    declined: requests?.filter(r => r.status === 'declined') ?? [],
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Client Requests</h1>
+
+      {/* Tabs rendered client-side via ClientActions */}
+      <ClientActions grouped={grouped} />
+    </div>
+  )
 }
