@@ -8,8 +8,12 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 w-full bg-white border-b border-gray-100 z-50">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
-        <Link href="/" className="text-xl font-bold text-green-700">
-          dytmojo
+        <Link href="/" className="flex items-center">
+          <img
+            src="/images/logo.png"
+            alt="dytmojo"
+            className="h-20 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop links */}
