@@ -15,7 +15,7 @@ export default async function BlogPage() {
     <div className="min-h-screen bg-gray-50 py-16 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">Blog</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">Blogs</h1>
           <p className="text-gray-500">
             Healthy tips, recipes, and nutrition science — by your dietitian.
           </p>
