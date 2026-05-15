@@ -26,7 +26,7 @@ export default function AdminSidebar() {
       sticky top-0 shrink-0">
       {/* Logo */}
       <div className="p-6 border-b border-gray-100">
-        <p className="font-bold text-gray-900 text-lg">dytmojo</p>
+        <p className="font-bold text-gray-900 text-lg">DytMojo</p>
         <p className="text-xs text-gray-400 mt-0.5">Admin Dashboard</p>
       </div>
 

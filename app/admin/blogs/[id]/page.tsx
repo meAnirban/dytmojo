@@ -1,12 +1,23 @@
-import { requireAdmin } from '@/lib/admin'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+import { requireAdmin, createAdminClient } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import BlogEditor from '@/components/admin/BlogEditor'
 import { notFound } from 'next/navigation'
 
-export default async function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
+type Props = {
+  params: Promise<{
+    id: string
+  }>
+}
+
+export default async function EditBlogPage({ params }: Props) {
   await requireAdmin()
-  const supabase = await createClient()
+
   const { id } = await params
+
+  const supabase = createAdminClient()
 
   const { data: blog } = await supabase
     .from('blogs')

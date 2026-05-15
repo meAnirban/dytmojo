@@ -6,255 +6,258 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
 
-// ── Validation schemas ──
 const consultSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit Indian mobile number'),
+  name:  z.string().min(2, 'Name must be at least 2 characters'),
+  phone: z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number'),
   email: z.string().email('Enter a valid email address'),
 })
-
 const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be 6 digits'),
 })
-
 type ConsultForm = z.infer<typeof consultSchema>
-type OtpForm = z.infer<typeof otpSchema>
+type OtpForm    = z.infer<typeof otpSchema>
+
+const features = [
+  { icon: '🎯', text: 'Personalised nutrition plan' },
+  { icon: '📞', text: 'Direct consultation with Ankita' },
+  { icon: '📊', text: 'Progress tracking & check-ins' },
+  { icon: '🌱', text: 'Sustainable, realistic approach' },
+]
 
 export default function GetConsultationPage() {
-  const [step, setStep] = useState<'form' | 'otp' | 'done'>('form')
+  const [step, setStep]           = useState<'form' | 'otp' | 'done'>('form')
   const [userEmail, setUserEmail] = useState('')
-  const supabase = createClient()
+  const supabase                  = createClient()
 
-  // ── Step 1 form ──
-  const {
-    register: regConsult,
-    handleSubmit: handleConsult,
-    formState: { errors: errConsult, isSubmitting: submittingConsult },
-  } = useForm<ConsultForm>({ resolver: zodResolver(consultSchema) })
+  const { register: regC, handleSubmit: handleC,
+    formState: { errors: errC, isSubmitting: subC } } =
+    useForm<ConsultForm>({ resolver: zodResolver(consultSchema) })
 
-  // ── Step 2 OTP form ──
-  const {
-    register: regOtp,
-    handleSubmit: handleOtp,
-    formState: { errors: errOtp, isSubmitting: submittingOtp },
-  } = useForm<OtpForm>({ resolver: zodResolver(otpSchema) })
+  const { register: regO, handleSubmit: handleO,
+    formState: { errors: errO, isSubmitting: subO } } =
+    useForm<OtpForm>({ resolver: zodResolver(otpSchema) })
 
-  // ── Submit consultation form ──
   async function onSubmitForm(data: ConsultForm) {
-    // 1. Check if already submitted
     const { data: existing } = await supabase
-      .from('consultation_requests')
-      .select('id, status')
-      .eq('email', data.email)
-      .single()
+      .from('consultation_requests').select('id,status')
+      .eq('email', data.email).single()
 
-    if (existing) {
-      if (existing.status === 'approved') {
-        toast.success('You are already an approved client!')
-        return
-      }
-      if (existing.status === 'pending') {
-        toast('Your request is already submitted. We will contact you soon.', { icon: 'ℹ️' })
-        return
-      }
-    }
+    if (existing?.status === 'approved') { toast.success('You are already an approved client!'); return }
+    if (existing?.status === 'pending')  { toast('Request already submitted. We will contact you soon.', { icon: 'ℹ️' }); return }
 
-    // 2. Save to consultation_requests
-    const { error: dbError } = await supabase
+    const { error: dbErr } = await supabase
       .from('consultation_requests')
       .insert({ name: data.name, phone: data.phone, email: data.email })
+    if (dbErr) { toast.error('Something went wrong. Please try again.'); return }
 
-    if (dbError) {
-      toast.error('Something went wrong. Please try again.')
-      return
-    }
-
-    // 3. Send OTP via Supabase Auth
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email: data.email,
-      options: { shouldCreateUser: true },
+    const { error: otpErr } = await supabase.auth.signInWithOtp({
+      email: data.email, options: { shouldCreateUser: true },
     })
-
-    if (otpError) {
-      toast.error('Failed to send OTP. Please try again.')
-      return
-    }
+    if (otpErr) { toast.error('Failed to send OTP. Please try again.'); return }
 
     setUserEmail(data.email)
     toast.success('OTP sent to your email!')
     setStep('otp')
   }
 
-  // ── Verify OTP ──
   async function onSubmitOtp(data: OtpForm) {
     const { error } = await supabase.auth.verifyOtp({
-      email: userEmail,
-      token: data.otp,
-      type: 'email',
+      email: userEmail, token: data.otp, type: 'email',
     })
-
-    if (error) {
-      toast.error('Invalid or expired OTP. Please try again.')
-      return
-    }
-
-    // Mark as verified in otp_verifications table
-    await supabase
-      .from('otp_verifications')
-      .insert({ email: userEmail, verified: true })
-
+    if (error) { toast.error('Invalid or expired OTP.'); return }
+    await supabase.from('otp_verifications').insert({ email: userEmail, verified: true })
     toast.success('Email verified!')
     setStep('done')
   }
 
-  // ── Resend OTP ──
   async function resendOtp() {
     const { error } = await supabase.auth.signInWithOtp({
-      email: userEmail,
-      options: { shouldCreateUser: false },
+      email: userEmail, options: { shouldCreateUser: false },
     })
     if (error) toast.error('Failed to resend. Please wait a moment.')
     else toast.success('New OTP sent!')
   }
 
   return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center px-4 py-16">
-      <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 w-full max-w-md">
+    <div className="min-h-screen bg-cream flex">
 
-        {/* ── STEP 1: Consultation Form ── */}
-        {step === 'form' && (
-          <>
-            <div className="mb-8 text-center">
-              <span className="text-3xl">🥗</span>
-              <h1 className="text-2xl font-bold text-gray-900 mt-2">Get Consultation</h1>
-              <p className="text-gray-500 text-sm mt-1">
-                Fill in your details. The dietitian will personally reach out to you.
-              </p>
-            </div>
+      {/* Left panel — value prop (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-[45%] bg-forest flex-col justify-between
+        p-14 relative overflow-hidden">
+        {/* Dot texture */}
+        <div className="absolute inset-0 pointer-events-none opacity-5"
+          style={{ backgroundImage: 'radial-gradient(circle, #FAF7F2 1px, transparent 1px)',
+                   backgroundSize: '20px 20px' }} />
+        <div className="absolute bottom-[-40px] left-[-40px] w-64 h-64 rounded-full
+          bg-forest-light opacity-40 pointer-events-none" />
 
-            <form onSubmit={handleConsult(onSubmitForm)} className="flex flex-col gap-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
-                <input
-                  {...regConsult('name')}
-                  placeholder="Priya Sharma"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm
-                    focus:outline-none focus:ring-2 focus:ring-green-400"
-                />
-                {errConsult.name && (
-                  <p className="text-red-500 text-xs mt-1">{errConsult.name.message}</p>
-                )}
+        <div className="relative">
+          <img src="/images/logo.png" alt="dytmojo"
+            className="h-10 w-auto object-contain brightness-200 opacity-90 mb-16" />
+
+          <h2 className="font-display text-4xl text-cream leading-tight mb-4">
+            Start your
+            <br />
+            <span className="italic text-gold">transformation</span>
+            <br />
+            today
+          </h2>
+          <p className="text-cream/60 text-base leading-relaxed mb-12">
+            Fill out the form and Ankita will personally reach out within 24 hours
+            to understand your goals.
+          </p>
+
+          <div className="flex flex-col gap-4">
+            {features.map(f => (
+              <div key={f.text} className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-forest-light flex items-center
+                  justify-center text-base shrink-0">{f.icon}</div>
+                <p className="text-cream/80 text-sm font-medium">{f.text}</p>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  {...regConsult('phone')}
-                  placeholder="9876543210"
-                  maxLength={10}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm
-                    focus:outline-none focus:ring-2 focus:ring-green-400"
-                />
-                {errConsult.phone && (
-                  <p className="text-red-500 text-xs mt-1">{errConsult.phone.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  {...regConsult('email')}
-                  placeholder="priya@email.com"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm
-                    focus:outline-none focus:ring-2 focus:ring-green-400"
-                />
-                {errConsult.email && (
-                  <p className="text-red-500 text-xs mt-1">{errConsult.email.message}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={submittingConsult}
-                className="bg-green-600 text-white py-3 rounded-xl font-semibold
-                  hover:bg-green-700 transition disabled:opacity-60 mt-2">
-                {submittingConsult ? 'Sending OTP...' : 'Send OTP & Submit'}
-              </button>
-            </form>
-          </>
-        )}
-
-        {/* ── STEP 2: OTP Verification ── */}
-        {step === 'otp' && (
-          <>
-            <div className="mb-8 text-center">
-              <span className="text-3xl">📬</span>
-              <h1 className="text-2xl font-bold text-gray-900 mt-2">Verify Your Email</h1>
-              <p className="text-gray-500 text-sm mt-1">
-                We sent a 6-digit OTP to <span className="font-medium">{userEmail}</span>
-              </p>
-            </div>
-
-            <form onSubmit={handleOtp(onSubmitOtp)} className="flex flex-col gap-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Enter OTP
-                </label>
-                <input
-                  {...regOtp('otp')}
-                  placeholder="123456"
-                  maxLength={6}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm
-                    text-center tracking-widest text-lg focus:outline-none
-                    focus:ring-2 focus:ring-green-400"
-                />
-                {errOtp.otp && (
-                  <p className="text-red-500 text-xs mt-1">{errOtp.otp.message}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={submittingOtp}
-                className="bg-green-600 text-white py-3 rounded-xl font-semibold
-                  hover:bg-green-700 transition disabled:opacity-60">
-                {submittingOtp ? 'Verifying...' : 'Verify OTP'}
-              </button>
-
-              <button
-                type="button"
-                onClick={resendOtp}
-                className="text-green-600 text-sm font-medium hover:underline text-center">
-                Resend OTP
-              </button>
-            </form>
-          </>
-        )}
-
-        {/* ── STEP 3: Done ── */}
-        {step === 'done' && (
-          <div className="text-center flex flex-col items-center gap-4">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-              <span className="text-4xl">✅</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">You're all set!</h1>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
-              Your consultation request has been submitted and your email is verified.
-              The dietitian will personally reach out to you via phone or email within
-              24–48 hours.
-            </p>
-            <div className="bg-green-50 rounded-2xl p-4 text-sm text-green-800 w-full mt-2">
-              📞 If you don't hear back in 48 hours, WhatsApp at <strong>+91 XXXXXXXXXX</strong>
-            </div>
+            ))}
           </div>
-        )}
+        </div>
 
+        <div className="relative">
+          <div className="bg-forest-light rounded-2xl p-5 border border-cream/10">
+            <div className="flex gap-1 mb-2">
+              {[1,2,3,4,5].map(s => <span key={s} className="text-gold text-sm">★</span>)}
+            </div>
+            <p className="text-cream/80 text-sm leading-relaxed italic mb-3">
+              "Ankita changed my entire relationship with food. Lost 12 kg in 4 months
+              and never felt hungry once!"
+            </p>
+            <p className="text-cream/50 text-xs font-semibold">— Priya S., Bengaluru</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md">
+
+          {/* STEP 1 — Form */}
+          {step === 'form' && (
+            <div className="animate-fade-up">
+              <div className="mb-8">
+                <span className="text-xs text-terra font-bold tracking-widest uppercase
+                  border-b-2 border-terra pb-1 inline-block mb-4">
+                  Get Started
+                </span>
+                <h1 className="font-display text-3xl md:text-4xl text-forest mb-2">
+                  Book a consultation
+                </h1>
+                <p className="text-ink-muted text-sm">
+                  Free first consultation · No commitment
+                </p>
+              </div>
+
+              <form onSubmit={handleC(onSubmitForm)} className="flex flex-col gap-5">
+                {[
+                  { name: 'name' as const,  label: 'Full Name',       placeholder: 'Priya Sharma',       type: 'text'  },
+                  { name: 'phone' as const, label: 'Phone Number',    placeholder: '9876543210',          type: 'tel'   },
+                  { name: 'email' as const, label: 'Email Address',   placeholder: 'priya@email.com',     type: 'email' },
+                ].map(field => (
+                  <div key={field.name}>
+                    <label className="block text-sm font-semibold text-forest mb-1.5">
+                      {field.label}
+                    </label>
+                    <input
+                      {...regC(field.name)}
+                      type={field.type}
+                      placeholder={field.placeholder}
+                      maxLength={field.name === 'phone' ? 10 : undefined}
+                      className="w-full bg-white border border-cream-darker rounded-2xl
+                        px-5 py-3.5 text-sm text-ink placeholder-ink-muted
+                        focus:outline-none focus:ring-2 focus:ring-forest/30
+                        focus:border-forest transition-all duration-200"
+                    />
+                    {errC[field.name] && (
+                      <p className="text-terra text-xs mt-1.5 flex items-center gap-1">
+                        <span>⚠</span> {errC[field.name]?.message}
+                      </p>
+                    )}
+                  </div>
+                ))}
+
+                <button type="submit" disabled={subC}
+                  className="bg-forest text-cream font-semibold py-4 rounded-full
+                    hover:bg-forest-light transition-all duration-200 mt-2
+                    disabled:opacity-60 shadow-lg hover:shadow-xl
+                    hover:-translate-y-0.5 active:translate-y-0">
+                  {subC ? 'Sending OTP...' : 'Send OTP & Submit →'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* STEP 2 — OTP */}
+          {step === 'otp' && (
+            <div className="animate-fade-up">
+              <div className="mb-8">
+                <div className="w-16 h-16 rounded-2xl bg-forest-pale flex items-center
+                  justify-center text-3xl mb-5">📬</div>
+                <h1 className="font-display text-3xl text-forest mb-2">Check your email</h1>
+                <p className="text-ink-muted text-sm leading-relaxed">
+                  We sent a 6-digit code to{' '}
+                  <span className="font-semibold text-ink">{userEmail}</span>
+                </p>
+              </div>
+
+              <form onSubmit={handleO(onSubmitOtp)} className="flex flex-col gap-5">
+                <div>
+                  <label className="block text-sm font-semibold text-forest mb-1.5">
+                    Enter OTP
+                  </label>
+                  <input
+                    {...regO('otp')}
+                    placeholder="• • • • • •"
+                    maxLength={6}
+                    className="w-full bg-white border border-cream-darker rounded-2xl
+                      px-5 py-4 text-2xl text-center tracking-[0.5em] text-forest font-bold
+                      focus:outline-none focus:ring-2 focus:ring-forest/30
+                      focus:border-forest transition-all duration-200"
+                  />
+                  {errO.otp && (
+                    <p className="text-terra text-xs mt-1.5">⚠ {errO.otp.message}</p>
+                  )}
+                </div>
+
+                <button type="submit" disabled={subO}
+                  className="bg-forest text-cream font-semibold py-4 rounded-full
+                    hover:bg-forest-light transition-all duration-200
+                    disabled:opacity-60 shadow-lg">
+                  {subO ? 'Verifying...' : 'Verify & Continue →'}
+                </button>
+
+                <button type="button" onClick={resendOtp}
+                  className="text-terra text-sm font-semibold hover:underline text-center">
+                  Didn't receive it? Resend OTP
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* STEP 3 — Done */}
+          {step === 'done' && (
+            <div className="animate-scale-in text-center flex flex-col items-center gap-5">
+              <div className="w-20 h-20 rounded-3xl bg-forest-pale flex items-center
+                justify-center text-4xl mb-2">✅</div>
+              <h1 className="font-display text-3xl text-forest">You're all set!</h1>
+              <p className="text-ink-soft text-sm leading-relaxed max-w-xs">
+                Your request is submitted and email is verified. Ankita will personally
+                contact you via phone or email within 24–48 hours.
+              </p>
+              <div className="bg-forest rounded-2xl p-5 text-left w-full border border-forest-light mt-2">
+                <p className="text-cream/70 text-sm">
+                  📞 Haven't heard back in 48 hours? WhatsApp at{' '}
+                  <strong className="text-cream">+91 XXXXXXXXXX</strong>
+                </p>
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   )

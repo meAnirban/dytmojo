@@ -1,10 +1,13 @@
-import { requireAdmin } from '@/lib/admin'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+import { requireAdmin, createAdminClient } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import TransformationModeration from '@/components/admin/TransformationModeration'
 
 export default async function AdminTransformationsPage() {
   await requireAdmin()
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: stories } = await supabase
     .from('transformations')

@@ -21,7 +21,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <div className="max-w-2xl mx-auto">
 
         {/* Back */}
-        <Link href="/blog"
+        <Link href="/blogs"
           className="text-sm text-green-600 hover:underline font-medium mb-8 block">
           ← Back to Blog
         </Link>
@@ -71,10 +71,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <p className="text-gray-500 text-sm mb-5">
             Book a consultation and get a plan built just for you.
           </p>
-          <Link href="/get-consultation"
+          <Link href="/start-your-transformation"
             className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold
               hover:bg-green-700 transition">
-            Get Consultation
+            Start Your Transformation
           </Link>
         </div>
       </div>

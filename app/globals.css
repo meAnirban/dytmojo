@@ -1,27 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
 @import "tailwindcss";
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core palette */
+  --cream:        #FAF7F2;
+  --cream-dark:   #F0EBE1;
+  --cream-darker: #E4DAC8;
+  --forest:       #2D4A3E;
+  --forest-light: #3D6355;
+  --forest-pale:  #EBF2EE;
+  --terra:        #C4622D;
+  --terra-light:  #E8824D;
+  --terra-pale:   #FCF0E8;
+  --sage:         #8FAF8F;
+  --sage-light:   #C4D9C4;
+  --sage-pale:    #F0F5F0;
+  --gold:         #D4A853;
+  --gold-pale:    #FBF5E6;
+  --ink:          #1A1A1A;
+  --ink-soft:     #4A4A4A;
+  --ink-muted:    #8A8A8A;
+  --white:        #FFFFFF;
+
+  /* Typography */
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* TAILWIND V4 THEME MAP  */
+
+@theme {
+  /* Colors */
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
+  --color-cream-darker: var(--cream-darker);
+
+  --color-forest: var(--forest);
+  --color-forest-light: var(--forest-light);
+  --color-forest-pale: var(--forest-pale);
+
+  --color-terra: var(--terra);
+  --color-terra-light: var(--terra-light);
+  --color-terra-pale: var(--terra-pale);
+
+  --color-sage: var(--sage);
+  --color-sage-light: var(--sage-light);
+  --color-sage-pale: var(--sage-pale);
+
+  --color-gold: var(--gold);
+  --color-gold-pale: var(--gold-pale);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+
+  /* Fonts */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+@source inline("bg-forest");
+@source inline("bg-forest-light");
+@source inline("bg-forest-pale");
+
+@source inline("bg-cream");
+@source inline("bg-cream-dark");
+@source inline("bg-cream-darker");
+
+@source inline("bg-terra");
+@source inline("bg-terra-light");
+@source inline("bg-terra-pale");
+
+@source inline("bg-sage");
+@source inline("bg-sage-light");
+@source inline("bg-sage-pale");
+
+@source inline("bg-gold");
+@source inline("bg-gold-pale");
+
+@source inline("text-forest");
+@source inline("text-cream");
+@source inline("text-terra");
+@source inline("text-ink");
+@source inline("text-ink-soft");
+@source inline("text-ink-muted");
+
+@source inline("border-forest");
+@source inline("border-terra");
+@source inline("border-sage");
+@source inline("border-cream-darker");
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  background-color: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-fade-up   { animation: fadeUp 0.7s ease forwards; }
+.animate-fade-in   { animation: fadeIn 0.6s ease forwards; }
+.animate-scale-in  { animation: scaleIn 0.6s ease forwards; }
+.animate-float     { animation: float 4s ease-in-out infinite; }
+
+.delay-100 { animation-delay: 0.1s; opacity: 0; }
+.delay-200 { animation-delay: 0.2s; opacity: 0; }
+.delay-300 { animation-delay: 0.3s; opacity: 0; }
+.delay-400 { animation-delay: 0.4s; opacity: 0; }
+.delay-500 { animation-delay: 0.5s; opacity: 0; }
+.delay-600 { animation-delay: 0.6s; opacity: 0; }
+
+/* ── DISPLAY FONT UTILITY ── */
+.font-display { font-family: var(--font-display); }
+
+/* ── ORGANIC BLOB CLIP PATH ── */
+.blob-clip {
+  clip-path: ellipse(50% 50% at 50% 50%);
+}
+
+/* ── SECTION DIAGONAL ── */
+.diagonal-bottom {
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+}
+.diagonal-top {
+  clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 100%);
+}
+
+/* ── HOVER LIFT ── */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(45, 74, 62, 0.12);
+}
+
+/* ── CUSTOM SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--sage); border-radius: 3px; }
+
+/* ── PROSE OVERRIDES ── */
+.prose a { color: var(--forest); }
+.prose blockquote { border-color: var(--terra); }
+.prose h1,.prose h2,.prose h3 { font-family: var(--font-display); color: var(--forest); }

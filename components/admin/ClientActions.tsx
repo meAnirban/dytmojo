@@ -1,8 +1,9 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
+import { approveClient, declineClient, restoreClient } from '@/lib/actions/clientActions'
 
 type Request = {
   id: string
@@ -20,79 +21,76 @@ type Grouped = {
 }
 
 export default function ClientActions({ grouped }: { grouped: Grouped }) {
+  const router = useRouter()
+
   const [data, setData] = useState(grouped)
   const [tab, setTab] = useState<'pending' | 'approved' | 'declined'>('pending')
   const [loading, setLoading] = useState<string | null>(null)
-  const supabase = createClient()
 
   async function approve(request: Request) {
     setLoading(request.id)
+    const result = await approveClient(request.id, request.email, request.name, request.phone)
 
-    // Update status
-    const { error: updateError } = await supabase
-      .from('consultation_requests')
-      .update({ status: 'approved' })
-      .eq('id', request.id)
-
-    if (updateError) { toast.error('Failed to approve'); setLoading(null); return }
-
-    // Add to clients table
-    const { error: clientError } = await supabase
-      .from('clients')
-      .insert({ consultation_id: request.id, email: request.email, name: request.name })
-
-    if (clientError && !clientError.message.includes('duplicate')) {
-      toast.error('Approved but failed to create client record')
+    if (!result.success) {
+      toast.error('Failed to approve: ' + result.error)
+      setLoading(null)
+      return
     }
 
     toast.success(`${request.name} approved as client!`)
-
-    // Update local state
     setData(prev => ({
-      pending: prev.pending.filter(r => r.id !== request.id),
+      pending:  prev.pending.filter(r => r.id !== request.id),
       approved: [{ ...request, status: 'approved' }, ...prev.approved],
       declined: prev.declined,
     }))
+
+    router.refresh()
     setLoading(null)
   }
 
   async function decline(request: Request) {
     setLoading(request.id)
+    const result = await declineClient(request.id)
 
-    const { error } = await supabase
-      .from('consultation_requests')
-      .update({ status: 'declined' })
-      .eq('id', request.id)
-
-    if (error) { toast.error('Failed to decline'); setLoading(null); return }
+    if (!result.success) {
+      toast.error('Failed to decline: ' + result.error)
+      setLoading(null)
+      return
+    }
 
     toast.success(`${request.name} declined.`)
     setData(prev => ({
-      pending: prev.pending.filter(r => r.id !== request.id),
+      pending:  prev.pending.filter(r => r.id !== request.id),
       approved: prev.approved,
       declined: [{ ...request, status: 'declined' }, ...prev.declined],
     }))
+
+    router.refresh()
     setLoading(null)
   }
 
   async function restore(request: Request) {
     setLoading(request.id)
-    await supabase
-      .from('consultation_requests')
-      .update({ status: 'pending' })
-      .eq('id', request.id)
+    const result = await restoreClient(request.id)
 
-    toast('Moved back to pending')
+    if (!result.success) {
+      toast.error('Failed to restore: ' + result.error)
+      setLoading(null)
+      return
+    }
+
+    toast.success('Moved back to pending')
     setData(prev => ({
-      pending: [{ ...request, status: 'pending' }, ...prev.pending],
+      pending:  [{ ...request, status: 'pending' }, ...prev.pending],
       approved: prev.approved.filter(r => r.id !== request.id),
       declined: prev.declined.filter(r => r.id !== request.id),
     }))
+    router.refresh()
     setLoading(null)
   }
 
   const tabs = [
-    { key: 'pending', label: 'Pending', count: data.pending.length },
+    { key: 'pending',  label: 'Pending',  count: data.pending.length  },
     { key: 'approved', label: 'Approved', count: data.approved.length },
     { key: 'declined', label: 'Declined', count: data.declined.length },
   ] as const
@@ -101,7 +99,7 @@ export default function ClientActions({ grouped }: { grouped: Grouped }) {
 
   return (
     <div>
-      {/* Tab bar */}
+      {/* Tab bar — keep your existing JSX exactly as is */}
       <div className="flex gap-2 mb-6">
         {tabs.map(t => (
           <button
@@ -121,7 +119,7 @@ export default function ClientActions({ grouped }: { grouped: Grouped }) {
         ))}
       </div>
 
-      {/* Request cards */}
+      {/* Request cards — keep your existing JSX exactly as is */}
       {current.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
           <p className="text-gray-400 text-sm">No {tab} requests</p>
@@ -132,7 +130,6 @@ export default function ClientActions({ grouped }: { grouped: Grouped }) {
             <div key={r.id}
               className="bg-white rounded-2xl border border-gray-100 p-5
                 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              {/* Info */}
               <div className="flex flex-col gap-0.5">
                 <p className="font-semibold text-gray-900">{r.name}</p>
                 <p className="text-sm text-gray-500">{r.email}</p>
@@ -142,20 +139,15 @@ export default function ClientActions({ grouped }: { grouped: Grouped }) {
                 </p>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-2 shrink-0">
                 {tab === 'pending' && (
                   <>
-                    <button
-                      onClick={() => approve(r)}
-                      disabled={loading === r.id}
+                    <button onClick={() => approve(r)} disabled={loading === r.id}
                       className="bg-green-600 text-white px-5 py-2 rounded-xl text-sm
                         font-medium hover:bg-green-700 transition disabled:opacity-60">
                       {loading === r.id ? '...' : '✅ Approve'}
                     </button>
-                    <button
-                      onClick={() => decline(r)}
-                      disabled={loading === r.id}
+                    <button onClick={() => decline(r)} disabled={loading === r.id}
                       className="bg-red-50 text-red-600 border border-red-100 px-5 py-2
                         rounded-xl text-sm font-medium hover:bg-red-100 transition
                         disabled:opacity-60">
@@ -164,12 +156,10 @@ export default function ClientActions({ grouped }: { grouped: Grouped }) {
                   </>
                 )}
                 {(tab === 'approved' || tab === 'declined') && (
-                  <button
-                    onClick={() => restore(r)}
-                    disabled={loading === r.id}
+                  <button onClick={() => restore(r)} disabled={loading === r.id}
                     className="border border-gray-200 text-gray-600 px-5 py-2 rounded-xl
                       text-sm font-medium hover:bg-gray-50 transition disabled:opacity-60">
-                    ↩ Move to Pending
+                    {loading === r.id ? '...' : '↩ Move to Pending'}
                   </button>
                 )}
               </div>

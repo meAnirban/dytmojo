@@ -24,7 +24,7 @@ export default async function BlogPage() {
         {blogs && blogs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {blogs.map((blog: any) => (
-              <Link key={blog.id} href={`/blog/${blog.slug}`}
+              <Link key={blog.id} href={`/blogs/${blog.slug}`}
                 className="bg-white rounded-2xl border border-gray-100 overflow-hidden
                   hover:shadow-md transition group">
                 {blog.cover_image_url && (

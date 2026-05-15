@@ -1,10 +1,13 @@
-import { requireAdmin } from '@/lib/admin'
+export const dynamic = 'force-dynamic'  // ← add this line at the top
+export const revalidate = 0
+
+import { requireAdmin, createAdminClient } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
 export default async function AdminOverviewPage() {
   await requireAdmin()
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Fetch counts in parallel
   const [
