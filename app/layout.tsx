@@ -3,6 +3,7 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { Toaster } from 'react-hot-toast'
+import SessionRefresher from '@/components/SessionRefresher'
 
 export const metadata: Metadata = {
   title: 'dytmojo — Ankita Banerjee, Dietitian',
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="bg-cream text-ink font-body antialiased">
+        <SessionRefresher />
         <Navbar />
         <main className="pt-20">{children}</main>
         <Footer />

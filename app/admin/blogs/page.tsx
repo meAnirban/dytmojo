@@ -5,6 +5,7 @@ import { requireAdmin, createAdminClient } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import DeleteBlogButton from '@/components/admin/DeleteBlogButton'
 
 export default async function AdminBlogsPage() {
   await requireAdmin()
@@ -55,6 +56,7 @@ export default async function AdminBlogsPage() {
                 text-sm font-medium hover:bg-gray-50 transition">
               Edit
             </Link>
+            <DeleteBlogButton id={b.id} />
           </div>
         )) : (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">

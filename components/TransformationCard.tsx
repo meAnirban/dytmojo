@@ -6,18 +6,20 @@ type Transformation = {
   story: string
   rating: number
   date: string
+  is_anonymous?: boolean          // ← new
   before_image_url?: string
   after_image_url?: string
   clients?: { name: string }
 }
 
 export default function TransformationCard({ t }: { t: Transformation }) {
-  const initials = (t.clients?.name ?? 'A')
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  // ← Respect anonymous flag
+  const displayName = t.is_anonymous ? 'Anonymous' : (t.clients?.name ?? 'Anonymous')
+
+  const initials = t.is_anonymous
+    ? '?'
+    : (t.clients?.name ?? 'A')
+        .split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   return (
     <div className="bg-white rounded-3xl border border-cream-darker p-6
@@ -57,15 +59,16 @@ export default function TransformationCard({ t }: { t: Transformation }) {
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-cream-dark">
         <div className="flex items-center gap-3">
-          {/* Avatar */}
-          <div className="w-8 h-8 rounded-full bg-forest-pale flex items-center
-            justify-center text-forest text-xs font-bold shrink-0">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center
+            text-xs font-bold shrink-0
+            ${t.is_anonymous
+              ? 'bg-cream-darker text-ink-muted'
+              : 'bg-forest-pale text-forest'
+            }`}>
             {initials}
           </div>
           <div>
-            <p className="text-sm font-semibold text-ink">
-              {t.clients?.name ?? 'Anonymous'}
-            </p>
+            <p className="text-sm font-semibold text-ink">{displayName}</p>
             <p className="text-xs text-ink-muted">
               {format(new Date(t.date), 'dd MMM yyyy')}
             </p>

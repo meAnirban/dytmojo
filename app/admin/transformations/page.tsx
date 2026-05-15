@@ -13,6 +13,9 @@ export default async function AdminTransformationsPage() {
     .from('transformations')
     .select('*, clients(name)')
     .order('created_at', { ascending: false })
+    .limit(100)
+
+  // console.log('stories', stories)
 
   return (
     <div>
