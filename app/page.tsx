@@ -41,7 +41,7 @@ export default async function HomePage() {
                 rounded-full px-4 py-2">
                 <span className="w-2 h-2 rounded-full bg-terra animate-pulse" />
                 <span className="text-terra text-xs font-semibold tracking-widest uppercase">
-                  Certified Dietitian
+                  Clinical Dietitian
                 </span>
               </div>
               <div className="flex -space-x-1">
@@ -135,7 +135,7 @@ export default async function HomePage() {
                 <div className="w-9 h-9 rounded-xl bg-gold-pale flex items-center
                   justify-center text-lg shrink-0">🏅</div>
                 <div>
-                  <p className="text-[11px] font-bold text-forest leading-none">Certified</p>
+                  <p className="text-[11px] font-bold text-forest leading-none">Clinical</p>
                   <p className="text-[10px] text-ink-muted leading-none mt-0.5">Dietitian</p>
                 </div>
               </div>
