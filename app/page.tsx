@@ -11,6 +11,19 @@ export default async function HomePage() {
     .order('date', { ascending: false })
     .limit(10)
 
+  const { data: ratings } = await supabase
+    .from('transformations')
+    .select('rating')
+    .eq('is_visible', true)
+
+  const averageRating =
+    ratings && ratings.length > 0
+      ? (
+          ratings.reduce((sum, r) => sum + (r.rating || 0), 0) /
+          ratings.length
+        ).toFixed(1)
+      : '5.0'
+
   return (
     <div className="min-h-screen">
 
@@ -65,26 +78,33 @@ export default async function HomePage() {
 
             {/* Subtext */}
             <p className="animate-fade-up delay-200 text-ink-soft text-lg leading-relaxed
-              max-w-md font-light">
-              Hi, I'm <strong className="font-semibold text-forest">Ankita Banerjee</strong>.
-              I help people build a joyful, sustainable relationship with food —
-              no crash diets, no guilt, just real results.
+              max-w-lg font-light">
+              True wellness is about more than just weight loss. It’s about feeling
+              confident, energised, and balanced in your everyday life.
+              <br /><br />
+              Hi, I’m <strong className="font-semibold text-forest">Ankita Banerjee</strong>,
+              helping people build healthier lifestyles through
+              personalised nutrition, sustainable habits, and realistic guidance that fits
+              naturally into real life.
+              <br /><br />
+              My approach combines nutrition science with compassionate support to help you
+              achieve lasting results, without restrictive dieting or extremes.
             </p>
 
             {/* Social proof row */}
             <div className="animate-fade-up delay-300 flex items-center gap-6">
               <div className="text-center">
-                <p className="font-display text-3xl text-forest">500+</p>
+                <p className="font-display text-3xl text-forest">1200+</p>
                 <p className="text-xs text-ink-muted mt-0.5">Clients</p>
               </div>
               <div className="w-px h-10 bg-cream-darker" />
               <div className="text-center">
-                <p className="font-display text-3xl text-forest">8 yrs</p>
+                <p className="font-display text-3xl text-forest">7 yrs</p>
                 <p className="text-xs text-ink-muted mt-0.5">Experience</p>
               </div>
               <div className="w-px h-10 bg-cream-darker" />
               <div className="text-center">
-                <p className="font-display text-3xl text-forest">4.9★</p>
+                <p className="font-display text-3xl text-forest">{averageRating}★</p>
                 <p className="text-xs text-ink-muted mt-0.5">Rating</p>
               </div>
             </div>
@@ -119,7 +139,7 @@ export default async function HomePage() {
 
                 {/* Photo */}
                 <img
-                  src="/images/dietitian.jpg"
+                  src="/images/dietitian.png"
                   alt="Ankita Banerjee, Dietitian"
                   className="w-full h-full object-cover shadow-2xl border-4 border-white"
                   style={{
@@ -358,7 +378,7 @@ export default async function HomePage() {
 
 const specialisations = [
   { icon: '⚖️', title: 'Weight Management', desc: 'Sustainable weight loss or gain without crash diets or starvation — science-backed and built around your lifestyle.' },
-  { icon: '🩺', title: 'Medical Nutrition', desc: 'Therapeutic plans for diabetes, PCOS, thyroid, cholesterol, and gut health conditions.' },
+  { icon: '🩺', title: 'Medical Nutrition', desc: 'Therapeutic plans for diabetes, PCOS / PMOS, thyroid, cholesterol, hypertension, and arthritis conditions.' },
   { icon: '🏃', title: 'Sports Nutrition', desc: 'Performance-optimised meal plans for athletes and fitness enthusiasts.' },
   { icon: '🤰', title: 'Prenatal & Postnatal', desc: 'Safe, nourishing nutrition plans for pregnancy and postpartum recovery.' },
   { icon: '🧠', title: 'Gut & Hormonal Health', desc: 'Restore balance through food — addressing bloating, fatigue, mood swings and more.' },
@@ -368,6 +388,6 @@ const specialisations = [
 const whyChoose = [
   { icon: '🎯', title: 'Personalised — Not Generic', desc: 'Every plan is built around your lifestyle, food preferences, and health goals. No two plans are alike.' },
   { icon: '📞', title: 'Direct Access to Me', desc: 'You work with me personally — not an assistant. Real guidance from a real expert.' },
-  { icon: '📈', title: 'Proven Track Record', desc: 'Over 500 clients have transformed their health with measurable, lasting results.' },
+  { icon: '📈', title: 'Proven Track Record', desc: 'Over 1200 clients have transformed their health with measurable, lasting results.' },
   { icon: '💬', title: 'Ongoing Support', desc: 'Regular check-ins and plan adjustments as your life and goals evolve.' },
 ]
