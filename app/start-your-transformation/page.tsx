@@ -90,8 +90,8 @@ export default function GetConsultationPage() {
       {/* ── MOBILE TRUST BAR — visible only on mobile/tablet ── */}
       <div className="lg:hidden bg-forest px-6 py-8">
         {/* Logo */}
-        <img src="/images/logo.png" alt="dytmojo"
-          className="h-8 w-auto object-contain brightness-200 opacity-90 mb-6" />
+        {/* <img src="/images/logo.png" alt="dytmojo"
+          className="h-8 w-auto object-contain brightness-200 opacity-90 mb-6" /> */}
 
         {/* Headline */}
         <h2 className="font-display text-2xl text-cream leading-tight mb-2">
@@ -150,8 +150,8 @@ export default function GetConsultationPage() {
           bg-forest-light opacity-40 pointer-events-none" />
 
         <div className="relative">
-          <img src="/images/logo.png" alt="dytmojo"
-            className="h-10 w-auto object-contain brightness-200 opacity-90 mb-16" />
+          {/* <img src="/images/logo.png" alt="dytmojo"
+            className="h-10 w-auto object-contain brightness-200 opacity-90 mb-16" /> */}
 
           <h2 className="font-display text-4xl text-cream leading-tight mb-4">
             Start your
