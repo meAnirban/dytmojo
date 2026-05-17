@@ -275,6 +275,8 @@ export default function GetConsultationPage() {
                   </label>
                   <input
                     {...regO('otp')}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="• • • • • •"
                     maxLength={6}
                     className="w-full bg-white border border-cream-darker rounded-2xl
