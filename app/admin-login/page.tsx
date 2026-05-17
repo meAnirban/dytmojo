@@ -65,6 +65,8 @@ export default function AdminLoginPage() {
             </p>
             <input
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={otp}
               onChange={e => setOtp(e.target.value)}
               placeholder="123456"

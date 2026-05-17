@@ -42,8 +42,14 @@ export default function GetConsultationPage() {
       .from('consultation_requests').select('id,status')
       .eq('email', data.email).single()
 
-    if (existing?.status === 'approved') { toast.success('You are already an approved client!'); return }
-    if (existing?.status === 'pending')  { toast('Request already submitted. We will contact you soon.', { icon: 'ℹ️' }); return }
+    if (existing?.status === 'approved') {
+      toast.success('You are already an approved client!')
+      return
+    }
+    if (existing?.status === 'pending') {
+      toast('Request already submitted. We will contact you soon.', { icon: 'ℹ️' })
+      return
+    }
 
     const { error: dbErr } = await supabase
       .from('consultation_requests')
@@ -79,15 +85,67 @@ export default function GetConsultationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream flex flex-col lg:flex-row">
 
-      {/* Left panel — value prop (hidden on mobile) */}
+      {/* ── MOBILE TRUST BAR — visible only on mobile/tablet ── */}
+      <div className="lg:hidden bg-forest px-6 py-8">
+        {/* Logo */}
+        <img src="/images/logo.png" alt="dytmojo"
+          className="h-8 w-auto object-contain brightness-200 opacity-90 mb-6" />
+
+        {/* Headline */}
+        <h2 className="font-display text-2xl text-cream leading-tight mb-2">
+          Start your{' '}
+          <span className="italic text-gold">transformation</span>
+        </h2>
+        <p className="text-cream/60 text-sm leading-relaxed mb-6">
+          Fill out the form and Ankita will personally reach out within 24 hours.
+        </p>
+
+        {/* Feature pills — horizontal scroll on very small screens */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {features.map(f => (
+            <div key={f.text}
+              className="flex items-center gap-1.5 bg-forest-light border border-cream/10
+                rounded-full px-3 py-1.5">
+              <span className="text-sm">{f.icon}</span>
+              <span className="text-cream/80 text-xs font-medium whitespace-nowrap">
+                {f.text}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Compact testimonial */}
+        <div className="bg-forest-light rounded-2xl p-4 border border-cream/10
+          flex gap-3 items-start">
+          <div className="shrink-0 w-9 h-9 rounded-full bg-sage/30 flex items-center
+            justify-center text-sm font-bold text-cream">P</div>
+          <div>
+            <div className="flex gap-0.5 mb-1">
+              {[1,2,3,4,5].map(s => (
+                <span key={s} className="text-gold text-xs">★</span>
+              ))}
+            </div>
+            <p className="text-cream/75 text-xs leading-relaxed italic">
+              "Lost 12 kg in 4 months and never felt hungry once!"
+            </p>
+            <p className="text-cream/40 text-xs mt-1 font-semibold">
+              — Priya S., Bengaluru
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── LEFT PANEL — full version, desktop only ── */}
       <div className="hidden lg:flex lg:w-[45%] bg-forest flex-col justify-between
         p-14 relative overflow-hidden">
         {/* Dot texture */}
         <div className="absolute inset-0 pointer-events-none opacity-5"
-          style={{ backgroundImage: 'radial-gradient(circle, #FAF7F2 1px, transparent 1px)',
-                   backgroundSize: '20px 20px' }} />
+          style={{
+            backgroundImage: 'radial-gradient(circle, #FAF7F2 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }} />
         <div className="absolute bottom-[-40px] left-[-40px] w-64 h-64 rounded-full
           bg-forest-light opacity-40 pointer-events-none" />
 
@@ -111,7 +169,9 @@ export default function GetConsultationPage() {
             {features.map(f => (
               <div key={f.text} className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-forest-light flex items-center
-                  justify-center text-base shrink-0">{f.icon}</div>
+                  justify-center text-base shrink-0">
+                  {f.icon}
+                </div>
                 <p className="text-cream/80 text-sm font-medium">{f.text}</p>
               </div>
             ))}
@@ -121,7 +181,9 @@ export default function GetConsultationPage() {
         <div className="relative">
           <div className="bg-forest-light rounded-2xl p-5 border border-cream/10">
             <div className="flex gap-1 mb-2">
-              {[1,2,3,4,5].map(s => <span key={s} className="text-gold text-sm">★</span>)}
+              {[1,2,3,4,5].map(s => (
+                <span key={s} className="text-gold text-sm">★</span>
+              ))}
             </div>
             <p className="text-cream/80 text-sm leading-relaxed italic mb-3">
               "Ankita changed my entire relationship with food. Lost 12 kg in 4 months
@@ -132,8 +194,8 @@ export default function GetConsultationPage() {
         </div>
       </div>
 
-      {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-16">
+      {/* ── RIGHT PANEL — form (full width on mobile, 55% on desktop) ── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 lg:py-16">
         <div className="w-full max-w-md">
 
           {/* STEP 1 — Form */}
@@ -154,9 +216,9 @@ export default function GetConsultationPage() {
 
               <form onSubmit={handleC(onSubmitForm)} className="flex flex-col gap-5">
                 {[
-                  { name: 'name' as const,  label: 'Full Name',       placeholder: 'Priya Sharma',       type: 'text'  },
-                  { name: 'phone' as const, label: 'Phone Number',    placeholder: '9876543210',          type: 'tel'   },
-                  { name: 'email' as const, label: 'Email Address',   placeholder: 'priya@email.com',     type: 'email' },
+                  { name: 'name'  as const, label: 'Full Name',     placeholder: 'Priya Sharma',   type: 'text'  },
+                  { name: 'phone' as const, label: 'Phone Number',  placeholder: '9876543210',      type: 'tel'   },
+                  { name: 'email' as const, label: 'Email Address', placeholder: 'priya@email.com', type: 'email' },
                 ].map(field => (
                   <div key={field.name}>
                     <label className="block text-sm font-semibold text-forest mb-1.5">
@@ -197,7 +259,9 @@ export default function GetConsultationPage() {
               <div className="mb-8">
                 <div className="w-16 h-16 rounded-2xl bg-forest-pale flex items-center
                   justify-center text-3xl mb-5">📬</div>
-                <h1 className="font-display text-3xl text-forest mb-2">Check your email</h1>
+                <h1 className="font-display text-3xl text-forest mb-2">
+                  Check your email
+                </h1>
                 <p className="text-ink-muted text-sm leading-relaxed">
                   We sent a 6-digit code to{' '}
                   <span className="font-semibold text-ink">{userEmail}</span>
@@ -248,10 +312,11 @@ export default function GetConsultationPage() {
                 Your request is submitted and email is verified. Ankita will personally
                 contact you via phone or email within 24–48 hours.
               </p>
-              <div className="bg-forest rounded-2xl p-5 text-left w-full border border-forest-light mt-2">
+              <div className="bg-forest rounded-2xl p-5 text-left w-full
+                border border-forest-light mt-2">
                 <p className="text-cream/70 text-sm">
-                  📞 Haven't heard back in 48 hours? WhatsApp at{' '}
-                  <strong className="text-cream">+91 XXXXXXXXXX</strong>
+                  📞 Haven't heard back in 48 hours? Email at{' '}
+                  <strong className="text-cream">dtankitabanerjee@gmail.com</strong>
                 </p>
               </div>
             </div>
